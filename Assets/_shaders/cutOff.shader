@@ -4,8 +4,7 @@
    Properties
    {
    		_Color ("color", Color) = (0.0, 1.0, 0.0, 1.0)
-   		_Color2 ("colorBack", Color) = (0.0, 1.0, 0.0, 1.0)
-   
+   		_Color2 ("colorBack", Color) = (0.0, 1.0, 0.0, 1.0)   
    }
    
    SubShader {

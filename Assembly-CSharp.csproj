@@ -47,8 +47,17 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\_scripts\CutOffTest.cs" />
+     <None Include="Assets\_shaders\multiplicativeBlending.shader" />
+     <None Include="Assets\_shaders\phongPerPixels.shader" />
+     <None Include="Assets\_shaders\textured.shader" />
+     <None Include="Assets\_shaders\diffusePerVertex.shader" />
+     <None Include="Assets\_shaders\silhouette.shader" />
      <None Include="Assets\_shaders\cutOff.shader" />
+     <None Include="Assets\_shaders\additiveBlending.shader" />
+     <None Include="Assets\_shaders\additiveMultiplicativeBlending.shader" />
      <None Include="Assets\_shaders\basic.shader" />
+     <None Include="Assets\_shaders\phongPerVertex.shader" />
+     <None Include="Assets\_shaders\transparent.shader" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>
