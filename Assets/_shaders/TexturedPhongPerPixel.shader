@@ -1,8 +1,9 @@
-﻿Shader "Cg per-pixel lighting" {
+﻿Shader "texturedPhongPerPixel" {
    Properties {
       _Color ("Diffuse Material Color", Color) = (1,1,1,1) 
       _SpecColor ("Specular Material Color", Color) = (1,1,1,1) 
       _Shininess ("Shininess", Float) = 10
+      _MainTex ("Texture Image", 2D) = "white" {} 
    }
    SubShader {
       Pass {	
@@ -22,15 +23,18 @@
          uniform float4 _Color; 
          uniform float4 _SpecColor; 
          uniform float _Shininess;
+         uniform sampler2D _MainTex;
  
          struct vertexInput {
             float4 vertex : POSITION;
             float3 normal : NORMAL;
+            float4 texCoord : TEXCOORD0;            
          };
          struct vertexOutput {
             float4 pos : SV_POSITION;
-            float4 posWorld : TEXCOORD0;
-            float3 normalDir : TEXCOORD1;
+            float4 posWorld : TEXCOORD1;
+            float3 normalDir : TEXCOORD2;
+            float4 texCoord : TEXCOORD0;
          };
  
          vertexOutput vert(vertexInput input) 
@@ -45,6 +49,8 @@
             output.posWorld = mul(modelMatrix, input.vertex);
             output.normalDir = normalize( mul(float4(input.normal, 0.0), modelMatrixInverse).xyz);
             output.pos = mul(UNITY_MATRIX_MVP, input.vertex);
+            
+            output.texCoord = input.texCoord;
             return output;
          }
  
@@ -69,9 +75,9 @@
                lightDirection = normalize(vertexToLightSource);
             }
  
-            float3 ambientLighting = UNITY_LIGHTMODEL_AMBIENT.rgb * _Color.rgb;
+            float3 ambientLighting = UNITY_LIGHTMODEL_AMBIENT.rgb * tex2D(_MainTex, input.texCoord).rgb;
  
-            float3 diffuseReflection = attenuation * _LightColor0.rgb * _Color.rgb * max(0.0, dot(normalDirection, lightDirection));
+            float3 diffuseReflection = attenuation * _LightColor0.rgb * tex2D(_MainTex, input.texCoord).rgb * max(0.0, dot(normalDirection, lightDirection));
  
             float3 specularReflection;
             if (dot(normalDirection, lightDirection) < 0.0) 
@@ -103,21 +109,24 @@
  
          #include "UnityCG.cginc"
          uniform float4 _LightColor0; 
-            // color of light source (from "Lighting.cginc")
+         // color of light source (from "Lighting.cginc")
  
          // User-specified properties
          uniform float4 _Color; 
          uniform float4 _SpecColor; 
          uniform float _Shininess;
+         uniform sampler2D _MainTex;
  
          struct vertexInput {
             float4 vertex : POSITION;
             float3 normal : NORMAL;
+            float4 texCoord : TEXCOORD0;            
          };
          struct vertexOutput {
             float4 pos : SV_POSITION;
-            float4 posWorld : TEXCOORD0;
-            float3 normalDir : TEXCOORD1;
+            float4 posWorld : TEXCOORD1;
+            float3 normalDir : TEXCOORD2;
+            float4 texCoord : TEXCOORD0;
          };
  
          vertexOutput vert(vertexInput input) 
@@ -130,9 +139,10 @@
                // because we normalize transformed vectors
  
             output.posWorld = mul(modelMatrix, input.vertex);
-            output.normalDir = normalize(
-               mul(float4(input.normal, 0.0), modelMatrixInverse).xyz);
+            output.normalDir = normalize( mul(float4(input.normal, 0.0), modelMatrixInverse).xyz);
             output.pos = mul(UNITY_MATRIX_MVP, input.vertex);
+            
+            output.texCoord = input.texCoord;
             return output;
          }
  
@@ -140,8 +150,7 @@
          {
             float3 normalDirection = normalize(input.normalDir);
  
-            float3 viewDirection = normalize(
-               _WorldSpaceCameraPos - input.posWorld.xyz);
+            float3 viewDirection = normalize(_WorldSpaceCameraPos - input.posWorld.xyz);
             float3 lightDirection;
             float attenuation;
  
@@ -152,16 +161,15 @@
             } 
             else // point or spot light
             {
-               float3 vertexToLightSource = 
-                  _WorldSpaceLightPos0.xyz - input.posWorld.xyz;
+               float3 vertexToLightSource = _WorldSpaceLightPos0.xyz - input.posWorld.xyz;
                float distance = length(vertexToLightSource);
                attenuation = 1.0 / distance; // linear attenuation 
                lightDirection = normalize(vertexToLightSource);
             }
  
-            float3 diffuseReflection = 
-               attenuation * _LightColor0.rgb * _Color.rgb
-               * max(0.0, dot(normalDirection, lightDirection));
+            float3 ambientLighting = UNITY_LIGHTMODEL_AMBIENT.rgb * tex2D(_MainTex, input.texCoord).rgb;
+ 
+            float3 diffuseReflection = attenuation * _LightColor0.rgb * tex2D(_MainTex, input.texCoord).rgb * max(0.0, dot(normalDirection, lightDirection));
  
             float3 specularReflection;
             if (dot(normalDirection, lightDirection) < 0.0) 
@@ -172,15 +180,10 @@
             }
             else // light source on the right side
             {
-               specularReflection = attenuation * _LightColor0.rgb 
-                  * _SpecColor.rgb * pow(max(0.0, dot(
-                  reflect(-lightDirection, normalDirection), 
-                  viewDirection)), _Shininess);
+               specularReflection = attenuation * _LightColor0.rgb * _SpecColor.rgb * pow(max(0.0, dot( reflect(-lightDirection, normalDirection), viewDirection)), _Shininess);
             }
 
-            return float4(diffuseReflection 
-               + specularReflection, 1.0);
-               // no ambient lighting in this pass
+            return float4(ambientLighting + diffuseReflection + specularReflection, 1.0);
          }
  
          ENDCG

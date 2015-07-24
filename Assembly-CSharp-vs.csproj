@@ -55,7 +55,9 @@
      <None Include="Assets\_shaders\cutOff.shader" />
      <None Include="Assets\_shaders\additiveBlending.shader" />
      <None Include="Assets\_shaders\additiveMultiplicativeBlending.shader" />
+     <None Include="Assets\_shaders\Glossy.shader" />
      <None Include="Assets\_shaders\basic.shader" />
+     <None Include="Assets\_shaders\TexturedPhongPerPixel.shader" />
      <None Include="Assets\_shaders\phongPerVertex.shader" />
      <None Include="Assets\_shaders\transparent.shader" />
  <Reference Include="UnityEngine.UI">
